@@ -10,6 +10,7 @@ services:
   # subsequent runs, the service simply returns immediately, without performing
   # any modification to existing users.
   setup:
+    container_name: elk-setup
     build:
       context: setup/
       args:
@@ -34,7 +35,41 @@ services:
     depends_on:
       - elasticsearch
 
+  ent-search:
+    container_name: elk-ent-search
+    image: docker.elastic.co/enterprise-search/enterprise-search:${ELASTIC_VERSION}
+    restart: unless-stopped
+    depends_on:
+      - "kibana"
+      - "elasticsearch"
+    environment:
+      - "JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ENT_SEARCH_DEFAULT_PASSWORD=changeme"
+      - "elasticsearch.username=elastic"
+      - "elasticsearch.password=changeme"
+      - "elasticsearch.host=http://elasticsearch:9200"
+      - "allow_es_settings_modification=true"
+      - "secret_management.encryption_keys=[encryption_key]"
+      - "elasticsearch.startup_retry.interval=30"
+      - "ent_search.external_url=http://public_ip:3002"
+      - "kibana.host=http://0.0.0.0:5601"
+      - "kibana.external_url=http://kibana:5601"
+      - "elasticsearch.ssl.enabled:false"
+      # - "elasticsearch.ssl.certificate:/usr/share/elasticsearch/config/certificates/fullchain.pem"
+      # - "elasticsearch.ssl.key:/usr/share/elasticsearch/config/certificates/privkey.pem"
+      # - "ent_search.ssl.enabled=true"
+      # - "ent_search.ssl.keystore.path=/usr/share/enterprise-search/config/certificates/keystore.p12"
+      # - "ent_search.ssl.keystore.password= mypswd"
+      # - "ent_search.ssl.keystore.key_password= mypswd"
+    ports:
+      - 3002:3002
+    # volumes:
+    #   - /home/lenaic/jhispter2/src/main/resources/config/tls:/usr/share/enterprise-search/config/certificates
+    networks:
+      - elk
+
   elasticsearch:
+    container_name: elk-elasticsearch
     build:
       context: elasticsearch/
       args:
@@ -60,6 +95,7 @@ services:
     restart: unless-stopped
 
   logstash:
+    container_name: elk-logstash
     build:
       context: logstash/
       args:
@@ -82,6 +118,7 @@ services:
     restart: unless-stopped
 
   kibana:
+    container_name: elk-kibana
     build:
       context: kibana/
       args:

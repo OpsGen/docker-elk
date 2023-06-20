@@ -6,6 +6,8 @@ server.name: kibana
 server.host: 0.0.0.0
 elasticsearch.hosts: [ http://elasticsearch:9200 ]
 
+enterpriseSearch.host: 'http://ent-search:3002'
+
 monitoring.ui.container.elasticsearch.enabled: true
 monitoring.ui.container.logstash.enabled: true
 
@@ -38,7 +40,6 @@ xpack.fleet.outputs:
     type: elasticsearch
     hosts: [ http://elasticsearch:9200 ]
     is_default: true
-    is_default_monitoring: true
 
 xpack.fleet.packages:
   - name: fleet_server
